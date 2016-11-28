@@ -34,13 +34,15 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 public class UserDraw extends Application{
-
+	double lineinitX;
+	double lineinitY; 
 	
 	Label response; 
 	
@@ -142,14 +144,15 @@ public class UserDraw extends Application{
                 ClipboardContent content = new ClipboardContent();
                 content.putString(btnTable.getText());
                 db.setContent(content);
-                event.consume();
         	}
         });
+        
+        //canvasNode.setOn
         
         btnLine.setOnAction(new EventHandler<ActionEvent>(){
         	public void handle(ActionEvent e){
         		System.out.println("Line Draw");
-        		canvasNode.setCursor(Cursor.CROSSHAIR);
+        		canvasNode.setCursor(Cursor.CROSSHAIR);    
         	}
         });
        
@@ -193,6 +196,38 @@ public class UserDraw extends Application{
                 r.setOpacity(0.7);
                 canvasNode.getChildren().add(r);
                 mg.makeDraggable(r);
+        	}
+        });
+        
+        
+        canvasNode.setOnMousePressed(new EventHandler <MouseEvent>(){
+        	public void handle(MouseEvent me){
+        		if (canvasNode.getCursor() == Cursor.CROSSHAIR) {
+        			System.out.println("CrossHair Mouse Click Print");
+        			lineinitX = me.getSceneX()-100;
+        			lineinitY = me.getSceneY()-30;
+        			me.consume();
+//        			Line l = new Line(); 
+//        			l.setStartX(event.getSceneX());
+//        			l.setStartY(event.getSceneY());
+        		}
+        	}
+        });
+        
+        
+        
+        canvasNode.setOnMouseReleased(new EventHandler <MouseEvent>(){
+        	public void handle(MouseEvent me){
+        		if (canvasNode.getCursor() == Cursor.CROSSHAIR) {
+        			System.out.println("CrossHair Mouse Click Print");
+        			Line l = new Line(lineinitX, lineinitY, me.getSceneX()-100, me.getSceneY()-30);
+        			l.setFill(null);
+        			l.setStroke(Color.BLACK);
+        			l.setStrokeWidth(2);
+        			canvasNode.getChildren().add(l);
+        			mg.makeDraggable(l);
+        			canvasNode.setCursor(null);
+        		}
         	}
         });
         
@@ -247,11 +282,23 @@ public class UserDraw extends Application{
 		double orgTranslateX, orgTranslateY;
 		public void makeDraggable(Node node){
 			//node.setOnMouseEntered(OnMouseEnteredEventHandler);
+			//node.setOnMouseEntered(value);
+			node.setOnMouseEntered(OnMouseEnteredEventHandler);
 			node.setOnMousePressed(OnMousePressedEventHandler);
 			node.setOnMouseDragged(OnMouseDraggedEventHandler);
 			node.setOnMouseReleased(OnMouseDragReleasedEventHandler);
 			//node.setOnMouseDragReleased(OnMouseDragReleasedEventHandler);
 		}
+		
+		EventHandler<MouseEvent> OnMouseEnteredEventHandler = new EventHandler<MouseEvent>(){
+			@Override
+			public void handle(MouseEvent t){
+				Node p = ((Node) (t.getSource()));
+				Node canvas = p.getParent(); 
+				System.out.println("Mouse Over");
+				p.setCursor(Cursor.HAND); 
+			}
+		};
 		
 //		EventHandler<MouseEvent> OnMouseEnteredEventHandler = new EventHandler<MouseEvent>(){
 //			@Override
