@@ -44,6 +44,8 @@ public class UserDraw extends Application{
 	double lineinitX;
 	double lineinitY; 
 	
+	int DrawState; // 1 = line, 2 = rect (prob a better way to do this) 
+	
 	Label response; 
 	
 	//override the start method
@@ -58,14 +60,6 @@ public class UserDraw extends Application{
 		canvasNode.setStyle("-fx-border: 2px solid; -fx-border-color: gray; -fx-background-color: gainsboro");
 		Scene CanvasScene = new Scene(canvasNode); 
 		
-		
-		// not using grid at the moment.
-		GridPane grid = new GridPane(); // creates a GridPane object and assigns it to the variable named grid
-		grid.setAlignment(Pos.CENTER); //defulat position is top left, this changes it to the center. 
-		grid.setHgap(10);				//spacing between the rows and columns
-		grid.setVgap(10);		
-		grid.setPadding(new Insets(25, 25, 25, 25)); //space around the edge of the grid pane, insets: top, right, bottom, left. in pixels
-		grid.setStyle("-fx-border: 2px solid; -fx-border-color: gray;");
 
 		response = new Label("Drag and Drop"); // create a label that will report the selection
 		
@@ -121,17 +115,21 @@ public class UserDraw extends Application{
         Button btnTable = new Button("Insert Table", new ImageView("resources/text-x-generic.png"));
         Button btnClear = new Button("Clear Canvas", new ImageView("resources/stock-edit-clear-16.png"));
         Button btnLine  = new Button("Draw Line", new ImageView("resources/line.png"));
+        Button btnRect = new Button("Draw Rectangle", new ImageView("resources/rect.png"));
         // Now turn off text in the buttons
         btnTable.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
         btnClear.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
         btnLine.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+        btnRect.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
         // Set Tooltips
         btnTable.setTooltip(new Tooltip("Insert Database Table"));
         btnLine.setTooltip(new Tooltip("Draw Line"));
         btnClear.setTooltip(new Tooltip("Clear Canvas"));
+        btnRect.setTooltip(new Tooltip("Draw Rectanlge"));
         // Creat the toolbar
-        ToolBar tbDraw = new ToolBar(btnTable, btnLine, btnClear); 
+        ToolBar tbDraw = new ToolBar(btnTable, btnLine, btnRect, btnClear); 
         // Create a handler for the toolbar buttons.
+        
         
         //Drag detection
         btnTable.setOnDragDetected(new EventHandler <MouseEvent>(){
@@ -147,15 +145,6 @@ public class UserDraw extends Application{
         	}
         });
         
-        //canvasNode.setOn
-        
-        btnLine.setOnAction(new EventHandler<ActionEvent>(){
-        	public void handle(ActionEvent e){
-        		System.out.println("Line Draw");
-        		canvasNode.setCursor(Cursor.CROSSHAIR);    
-        	}
-        });
-       
         
         btnClear.setOnAction(new EventHandler<ActionEvent>(){
         //setOnAction(new EventHandler<ActionEvent>(){
@@ -199,11 +188,35 @@ public class UserDraw extends Application{
         	}
         });
         
+        canvasNode.setOnDragDetected(new EventHandler <MouseEvent>(){
+        	public void handle(MouseEvent me){
+        		System.out.println("Dragging in window");
+        		if (canvasNode.getCursor() == Cursor.CROSSHAIR && DrawState == 1) { //draw line
+        			System.out.println("Drawing Temp Line");
+        			Line l = new Line(lineinitX, lineinitY, me.getSceneX()-100, me.getSceneY()-30);
+        			l.setFill(null);
+        			l.setStroke(Color.GREEN);
+        			l.setStrokeWidth(2);
+        			canvasNode.getChildren().add(l);
+        			
+        		}
+        	}
+        });
+        
         
         canvasNode.setOnMousePressed(new EventHandler <MouseEvent>(){
         	public void handle(MouseEvent me){
-        		if (canvasNode.getCursor() == Cursor.CROSSHAIR) {
-        			System.out.println("CrossHair Mouse Click Print");
+        		if (canvasNode.getCursor() == Cursor.CROSSHAIR && DrawState == 1) { //draw line
+        			System.out.println("Drawing Line Pressed");
+        			lineinitX = me.getSceneX()-100;
+        			lineinitY = me.getSceneY()-30;
+        			me.consume();
+//        			Line l = new Line(); 
+//        			l.setStartX(event.getSceneX());
+//        			l.setStartY(event.getSceneY());
+        		}
+        		else if (canvasNode.getCursor() == Cursor.CROSSHAIR && DrawState == 2) { //draw rectangle
+        			System.out.println("Drawing Rectangle Pressed");
         			lineinitX = me.getSceneX()-100;
         			lineinitY = me.getSceneY()-30;
         			me.consume();
@@ -214,22 +227,39 @@ public class UserDraw extends Application{
         	}
         });
         
-        
-        
         canvasNode.setOnMouseReleased(new EventHandler <MouseEvent>(){
         	public void handle(MouseEvent me){
-        		if (canvasNode.getCursor() == Cursor.CROSSHAIR) {
-        			System.out.println("CrossHair Mouse Click Print");
+        		if (canvasNode.getCursor() == Cursor.CROSSHAIR && DrawState == 1){ //line
+        			System.out.println("Drawing Line Released");
+        			canvasNode.getChildren().remove(canvasNode.getChildren().size()-1); //removes temp line when down
         			Line l = new Line(lineinitX, lineinitY, me.getSceneX()-100, me.getSceneY()-30);
         			l.setFill(null);
         			l.setStroke(Color.BLACK);
         			l.setStrokeWidth(2);
         			canvasNode.getChildren().add(l);
         			mg.makeDraggable(l);
+        			DrawState = 0; 
         			canvasNode.setCursor(null);
         		}
-        	}
-        });
+        		else if (canvasNode.getCursor() == Cursor.CROSSHAIR && DrawState == 2){ //rect
+        			System.out.println("Drawing Rectangle Released");
+                    Rectangle r = new Rectangle(); 
+                    r.setX(lineinitX);
+                    r.setY(lineinitY); 
+                    double w = me.getSceneX()-lineinitX-100; 
+                    double h = me.getSceneY()-lineinitY-30;
+                    System.out.println("Width: "+w);
+                    System.out.println("Width: "+h);
+                    r.setWidth(w);
+                    r.setHeight(h);
+                    r.setOpacity(0.9);
+                    r.setStrokeWidth(2);
+                    canvasNode.getChildren().add(r);
+                    mg.makeDraggable(r);
+        			DrawState = 0; 
+        			canvasNode.setCursor(null);
+        		}
+        }});
         
         canvasNode.setOnDragOver(new EventHandler <DragEvent>() {
             public void handle(DragEvent event) {
@@ -249,18 +279,27 @@ public class UserDraw extends Application{
             }
         });
         
-        
+       
+        //Used when selected buttons have fired. Still testing... 
         EventHandler<ActionEvent> btnHandler = new EventHandler<ActionEvent>() {
         	public void handle(ActionEvent ae){
         		response.setText(((Button)ae.getTarget()).getText()); //inherits the test from the button definitions 
-//        		if (ae.equals() == btnClear ){
-//        			System.out.println("btnClear pressed handler");
-//        		}
-        		//canvasNode.setStyle("-fx-background-color: gainsboro");
+        		if (ae.getSource() == btnRect) {
+        			System.out.println("Draw Rectangle handled");
+        			canvasNode.setCursor(Cursor.CROSSHAIR);
+        			DrawState = 2; 
+        		}
+        		if (ae.getSource() == btnLine) {
+        			System.out.println("Draw Line handled");
+        			canvasNode.setCursor(Cursor.CROSSHAIR); 
+        			DrawState = 1; 
+        		}
         	}
         };
         // Set the toolbar action event handlers 
-        btnTable.setOnAction(btnHandler);
+        //btnTable.setOnAction(btnHandler);
+        btnLine.setOnAction(btnHandler);
+        btnRect.setOnAction(btnHandler);
         //btnClear.setOnAction(btnHandler);
  
         
@@ -277,17 +316,17 @@ public class UserDraw extends Application{
         
 	}
 	
+	//Custom Event Handlers for Mousegestures for objects that have already been drawn on window, i.e move. 
+	//during object creation call makeDraggable(node) 
 	public static class MouseGestures{
 		double orgSceneX, orgSceneY; 
 		double orgTranslateX, orgTranslateY;
 		public void makeDraggable(Node node){
-			//node.setOnMouseEntered(OnMouseEnteredEventHandler);
-			//node.setOnMouseEntered(value);
+
 			node.setOnMouseEntered(OnMouseEnteredEventHandler);
 			node.setOnMousePressed(OnMousePressedEventHandler);
 			node.setOnMouseDragged(OnMouseDraggedEventHandler);
 			node.setOnMouseReleased(OnMouseDragReleasedEventHandler);
-			//node.setOnMouseDragReleased(OnMouseDragReleasedEventHandler);
 		}
 		
 		EventHandler<MouseEvent> OnMouseEnteredEventHandler = new EventHandler<MouseEvent>(){
@@ -299,13 +338,6 @@ public class UserDraw extends Application{
 				p.setCursor(Cursor.HAND); 
 			}
 		};
-		
-//		EventHandler<MouseEvent> OnMouseEnteredEventHandler = new EventHandler<MouseEvent>(){
-//			@Override
-//			public void handle(MouseEvent t){
-//				
-//			}
-//		};
 		
 		EventHandler<MouseEvent> OnMousePressedEventHandler = new EventHandler<MouseEvent>() {
 			@Override
