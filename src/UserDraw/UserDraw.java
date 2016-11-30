@@ -193,16 +193,30 @@ public class UserDraw extends Application{
         		System.out.println("Dragging in window");
         		if (canvasNode.getCursor() == Cursor.CROSSHAIR && DrawState == 1) { //draw line
         			System.out.println("Drawing Temp Line");
-        			Line l = new Line(lineinitX, lineinitY, me.getSceneX()-100, me.getSceneY()-30);
-        			l.setFill(null);
-        			l.setStroke(Color.GREEN);
-        			l.setStrokeWidth(2);
-        			canvasNode.getChildren().add(l);
-        			
+//        			Line l = new Line(lineinitX, lineinitY, me.getSceneX()-100, me.getSceneY()-30);
+//        			l.setFill(null);
+//        			l.setStroke(Color.GREEN);
+//        			l.setStrokeWidth(2);
+//        			canvasNode.getChildren().add(l);
         		}
         	}
         });
         
+        
+        canvasNode.setOnMouseDragged(new EventHandler <MouseEvent>(){
+        	public void handle(MouseEvent me){
+    		System.out.println("Dragging in window for temp line");
+    		if (canvasNode.getCursor() == Cursor.CROSSHAIR && DrawState == 1) { //drawing line
+    			System.out.println("Drawing Temp Line before drawing new one");
+    			Line l = new Line(lineinitX, lineinitY, me.getSceneX()-100, me.getSceneY()-30);
+    			l.setFill(null);
+    			l.setStroke(Color.GREEN);
+    			l.setStrokeWidth(2);
+    			canvasNode.getChildren().add(l);
+    			//canvasNode.getChildren().remove(canvasNode.getChildren().size()-1); //removes temp line when down
+    		}
+    	}
+        });
         
         canvasNode.setOnMousePressed(new EventHandler <MouseEvent>(){
         	public void handle(MouseEvent me){
@@ -226,6 +240,8 @@ public class UserDraw extends Application{
         		}
         	}
         });
+        
+
         
         canvasNode.setOnMouseReleased(new EventHandler <MouseEvent>(){
         	public void handle(MouseEvent me){
@@ -260,6 +276,7 @@ public class UserDraw extends Application{
         			canvasNode.setCursor(null);
         		}
         }});
+        
         
         canvasNode.setOnDragOver(new EventHandler <DragEvent>() {
             public void handle(DragEvent event) {
