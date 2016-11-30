@@ -1,6 +1,6 @@
 // Application to allow a user to drag and drop items on a window 
 // Features: Accelerators for key Shortcuts. Using special value 'shortcut' enabling cross platform Windows and Mac
-// toolbars, 
+// toolbars, Appending to this comment
 
 package UserDraw;
 
