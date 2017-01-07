@@ -45,9 +45,10 @@ public class UserDraw extends Application{
 	double lineinitY; 
 	
 	int DrawState; // 1 = line, 2 = rect (prob a better way to do this) 
+	int lineState; // 0 = no temp line neded, 1 in draw mode (show temp line) 
+	
 	
 	Label response; 
-	
 	//override the start method
 	@Override
 	public void start(Stage primaryStage){
@@ -202,26 +203,36 @@ public class UserDraw extends Application{
         	}
         });
         
-        
         canvasNode.setOnMouseDragged(new EventHandler <MouseEvent>(){
         	public void handle(MouseEvent me){
     		System.out.println("Dragging in window for temp line");
     		if (canvasNode.getCursor() == Cursor.CROSSHAIR && DrawState == 1) { //drawing line
-    			System.out.println("Drawing Temp Line before drawing new one");
-    			Line l = new Line(lineinitX, lineinitY, me.getSceneX()-100, me.getSceneY()-30);
-    			l.setFill(null);
-    			l.setStroke(Color.GREEN);
-    			l.setStrokeWidth(2);
-    			canvasNode.getChildren().add(l);
+    			if (lineState == 1){
+    				System.out.println("Drawing Temp Line before drawing new one");
+    				Line l = new Line(lineinitX, lineinitY, me.getSceneX()-100, me.getSceneY()-30);
+    				l.setFill(null);
+    				l.setStroke(Color.GREEN);
+    				l.setStrokeWidth(2);
+    				canvasNode.getChildren().add(l);
+    				System.out.println(canvasNode.getChildren().size()); 
+    				if (canvasNode.getChildren().size()>1){
+    					Node last=canvasNode.getChildren().get(canvasNode.getChildren().size()-1);
+    					System.out.println(last.getClass());
+    					if (last.getClass() == l.getClass()){ //Checks to see if it's a line
+    						System.out.println("ITS A FREAKING LINE NEED TO REMOVE");
+    						canvasNode.getChildren().remove(canvasNode.getChildren().size()-1);
+    					}
+    					//canvasNode.getChildren().remove(canvasNode.getChildren().size()-1);
+    				}
     			//canvasNode.getChildren().remove(canvasNode.getChildren().size()-1); //removes temp line when down
-    		}
-    	}
+    		}}}
         });
         
         canvasNode.setOnMousePressed(new EventHandler <MouseEvent>(){
         	public void handle(MouseEvent me){
         		if (canvasNode.getCursor() == Cursor.CROSSHAIR && DrawState == 1) { //draw line
         			System.out.println("Drawing Line Pressed");
+        			lineState = 1;
         			lineinitX = me.getSceneX()-100;
         			lineinitY = me.getSceneY()-30;
         			me.consume();
